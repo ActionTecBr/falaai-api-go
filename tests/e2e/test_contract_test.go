@@ -3,11 +3,13 @@ package e2e
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
 var expectedOps = []string{
-	"POST /v1/audio/transcriptions", "POST /v1/analyze/diagnostic", "POST /v1/analyze/auditoriaRisco",
+	"POST /v1/audio/transcriptions", "POST /v1/analyze/diagnostic", "POST /v1/analyze/riskAudit",
 	"GET /v1/usage/log", "GET /v1/usage/by-key", "GET /v1/webhooks", "POST /v1/webhooks",
 	"PUT /v1/webhooks/{webhook_id}", "DELETE /v1/webhooks/{webhook_id}",
 	"GET /v1/email-alerts", "POST /v1/email-alerts", "PUT /v1/email-alerts/{alert_id}",
@@ -45,12 +47,20 @@ func TestOpenapiTemOperacoesEsperadas(t *testing.T) {
 }
 
 func TestSdkCobre100pc(t *testing.T) {
-	src, err := os.ReadFile("../../../../sdks/go/falaai.gen.go")
-	if err != nil {
-		t.Fatal(err)
+	files, err := filepath.Glob("../../api_*.go")
+	if err != nil || len(files) == 0 {
+		t.Fatalf("arquivos gerados api_*.go nao encontrados: %v", err)
 	}
-	text := string(src)
-	for _, p := range []string{"/v1/usage/log", "/v1/webhooks", "/v1/email-alerts", "/api/version", "/v1/health", "/v1/analyze/auditoriaRisco"} {
+	var b strings.Builder
+	for _, f := range files {
+		data, err := os.ReadFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b.Write(data)
+	}
+	text := b.String()
+	for _, p := range []string{"/v1/usage/log", "/v1/webhooks", "/v1/email-alerts", "/api/version", "/v1/health", "/v1/analyze/riskAudit"} {
 		if !contains(text, p) {
 			t.Fatalf("SDK nao cobre %s", p)
 		}
@@ -58,12 +68,8 @@ func TestSdkCobre100pc(t *testing.T) {
 }
 
 func TestExemplosExistem(t *testing.T) {
-	for _, f := range []string{
-		"curl/transcribe.sh", "python/transcribe.py", "nodejs/transcribe.js",
-		"curl/auditoria_risco.sh", "python/auditoria_risco.py", "nodejs/auditoria_risco.js",
-		"curl/diagnostic.sh", "python/diagnostic.py", "nodejs/diagnostic.js",
-	} {
-		if _, err := os.Stat("../../../../app/static/examples/" + f); err != nil {
+	for _, f := range []string{"transcribe.go", "diagnose.go", "audit.go", "health.go"} {
+		if _, err := os.Stat("../../examples/" + f); err != nil {
 			t.Fatalf("exemplo ausente: %s", f)
 		}
 	}

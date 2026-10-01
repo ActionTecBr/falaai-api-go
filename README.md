@@ -1,380 +1,262 @@
-# FalaAI API Go SDK - Speech-to-Text, Call Analytics & Compliance Audit
+# falaai-api (Go) — SDK for Conversation Intelligence, Speech Analytics & Compliance
 
-[![version](https://img.shields.io/github/v/tag/ActionTecBr/falaai-api?label=go&color=00ADD8)](https://pkg.go.dev/github.com/actiontecbr/falaai-api)
-[![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/ActionTecBr/falaai-api/blob/main/LICENSE)
-[![build](https://github.com/ActionTecBr/falaai-api/actions/workflows/ci.yml/badge.svg)](https://github.com/ActionTecBr/falaai-api/actions/workflows/ci.yml)
+[![pkg.go.dev](https://pkg.go.dev/badge/github.com/actiontecbr/falaai-api-go.svg)](https://pkg.go.dev/github.com/actiontecbr/falaai-api-go)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![CI](https://github.com/ActionTecBr/falaai-api-go/actions/workflows/ci.yml/badge.svg)](https://github.com/ActionTecBr/falaai-api-go/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://actiontecbr.github.io/falaai-api-go/)
 
-Official Go SDK for the **FalaAI API** - call transcription, conversation intelligence and compliance auditing (**COPC CX**, **ISO 18295-1**).
+Official **Go SDK** for the **FalaAI API** — transcribe audio, analyze conversations and audit compliance (COPC CX, ISO 18295-1). **Use each API independently or combine them into your own pipeline.**
 
-## What is FalaAI API?
+> Analyze calls, contact-center recordings, voice notes, chat and email. Get speaker-separated transcripts, summaries, reasons, actions, sentiment and a **compliance risk score**.
 
-FalaAI API turns conversations into auditable business intelligence, in three steps:
+## Use any FalaAI API independently
 
-1. **Transcribe** - audio (calls, voice notes, meetings) to text, with speaker separation.
-2. **Diagnose** - summary, reason, recommended action, topic and sentiment per conversation.
-3. **Audit compliance** - risk score and violations against **COPC CX** and **ISO 18295-1**.
+FalaAI is a set of **independent REST APIs**. You **do not** need FalaAI Transcription to use FalaAI analysis or compliance auditing. If your application already has a transcript, send that text straight to the analysis APIs.
 
-It works with **phone calls and call recordings** (PABX IP, Asterisk, FreePBX, contact center),
-**messaging** (WhatsApp, Telegram, web chat, SMS) and email - anything that can be turned into
-text. Three core endpoints (plus health, usage, webhooks and email alerts), one API key, no setup.
+| If you have... | Use |
+|---|---|
+| Audio but no transcript | `CreateTranscription` |
+| An existing transcript | `CreateDiagnostic` |
+| A transcript needing compliance analysis | `CreateAudit` |
+| An existing transcript needing both | `CreateDiagnostic` + `CreateAudit` |
+| Your own STT provider (Whisper, Deepgram...) | Skip `CreateTranscription` |
 
-## Who it's for
+```text
+Your STT                             ->  FalaAI Diagnostic  ->  FalaAI Risk Audit
+Telegram voice -> your STT           ->  FalaAI Risk Audit
+3CX / Asterisk / Genesys transcript  ->  FalaAI Diagnostic  ->  FalaAI Risk Audit
+CRM conversation                     ->  FalaAI Risk Audit
+```
 
-| Role | What they get |
-| --- | --- |
-| **Contact Center / Quality** | Audit 100% of conversations instead of a sample |
-| **Compliance / Legal** | Forensic, auditable evidence for audits and disputes |
-| **CX / Operations** | Risk score, sentiment and reason for every conversation |
-| **Developers** | One typed SDK, three core endpoints, one API key |
-| **Data / BI** | Clean, typed JSON ready for your database or BI tool |
+## Use the APIs the way you want
+
+Every FalaAI API is **independent and optional** — chain any subset, in any combination.
+
+```mermaid
+flowchart LR
+  A["Audio"] -.->|optional| T["Transcribe"]
+  T --> X["Text / dialog"]
+  S["Your own STT / CRM / chat / existing transcript"] --> X
+  X -.->|optional| D["Diagnostic"]
+  X -.->|optional| R["Risk Audit"]
+  D --> O["Structured intelligence + auditable report"]
+  R --> O
+```
+
+> Skip **Transcribe** if you already have text. Call only **Diagnostic**, only **Risk Audit**, or both.
 
 ## Install
 
 ```bash
-go get github.com/actiontecbr/falaai-api
+go get github.com/actiontecbr/falaai-api-go
 ```
 
-## Quick start
+Requires **Go 1.24+** (module `github.com/actiontecbr/falaai-api-go`).
+
+## Quickstart
+
+### 1. Get an API key
+Create a free account and copy your `fai_` key: <https://falaai.action.tec.br/api/auth> (or the [Dashboard](https://falaai.action.tec.br/api/dashboard)).
+
+### 2. Set environment variables
+
+```bash
+FALAAI_BASE_URL=https://api01-falaai.action.tec.br
+FALAAI_API_KEY=fai_xxxxxxxx
+```
+
+### 3. Transcribe a call (audio -> text)
 
 ```go
 package main
 
 import (
-	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
-	"io"
-	"mime/multipart"
-	"net/http"
 	"os"
 
-	falaai "github.com/actiontecbr/falaai-api"
+	falaai "github.com/actiontecbr/falaai-api-go"
 )
 
-func authEditor(key string) falaai.RequestEditorFn {
-	return func(ctx context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", "Bearer "+key)
-		return nil
-	}
-}
-
 func main() {
-	c, err := falaai.NewClientWithResponses(
-		"https://api01-falaai.action.tec.br",
-		falaai.WithRequestEditorFn(authEditor("fai_xxxxxx")),
-	)
+	client, err := falaai.NewClientWithAPIKey(os.Getenv("FALAAI_API_KEY"))
 	if err != nil {
 		panic(err)
 	}
-	ctx := context.Background()
 
-	f, err := os.Open("call.mp3")
+	file, err := os.Open("call.mp3")
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
+	defer file.Close()
 
-	var buf bytes.Buffer
-	mw := multipart.NewWriter(&buf)
-	fw, _ := mw.CreateFormFile("file", "call.mp3")
-	if _, err := io.Copy(fw, f); err != nil {
-		panic(err)
-	}
-	_ = mw.WriteField("model", "falaai-transcribe-1")
-	_ = mw.WriteField("language", "pt")
-	mw.Close()
+	model := "falaai-transcribe-1"
+	language := "pt"
+	ref := "call_202609271408"
 
-	res, err := c.CreateTranscriptionV1AudioTranscriptionsPostWithBodyWithResponse(
-		ctx, mw.FormDataContentType(), &buf)
+	r, err := client.CreateTranscription(context.Background(), falaai.TranscriptionParams{
+		File:              file,
+		Model:             model,
+		Language:          language,
+		ClientReferenceID: ref,
+	})
 	if err != nil {
 		panic(err)
 	}
-	if res.JSON200 == nil {
-		panic(fmt.Sprintf("HTTP %d: %s", res.StatusCode(), string(res.Body)))
-	}
-	fmt.Println(res.JSON200.Text)
+	out, _ := json.MarshalIndent(r, "", "  ")
+	fmt.Println(string(out))
 }
 ```
 
-## Request and response examples
-
-Real requests and responses, captured against the live API.
-
-### Health
-
-**Request**
-
-```bash
-curl https://api01-falaai.action.tec.br/v1/health \
-  -H "Authorization: Bearer fai_xxxxxx"
-```
-
-**Response**
+Expected response (abridged):
 
 ```json
 {
-  "status": "ok",
-  "version": "api_v1.21.47",
-  "uptime_seconds": 92855,
-  "database": true,
-  "phase": "production",
-  "launch_date": "2026-08-01"
-}
-```
-
-### Transcribe
-
-**Response** (the request is in [Quick start](#quick-start))
-
-```json
-{
-  "id": "tr-a38a97d0-452e-4519-b6bb-3c63694bf7ae",
+  "id": "tr-...",
   "object": "transcription",
   "model": "falaai-transcribe-1",
-  "filename": "analise_25s.mp3",
-  "processed_at": "2026-09-23T17:42:54.242449+00:00",
-  "usage": {
-    "audio_seconds": 25.0,
-    "credits_consumed": 25,
-    "processing_ms": 951
-  },
   "language": "por",
   "duration_seconds": 25.0,
-  "text": "Novatechno tudo, bom dia. Bom dia, Mateus. Tudo bem? Bem e você? Tudo bem. Não tem nada no sistema. Eu queria ver se de  ...",
-  "dialog": "Speaker 1: [00:00:01.639 - 00:00:02.560] Novatechno tudo, bom dia.\nSpeaker 2: [00:00:02.980 - 00:00:03.980] Bom dia, Mateus. Tudo bem?\nSpeaker 1: [00:00:04.700 - 00:00:05.179] Bem e você?\nSpeaker 2: [ ...",
-  "audio_events": [
-    {
-      "event": "[tosse]",
-      "start_s": 22.06,
-      "end_s": 22.44,
-      "duration_s": 0.38,
-      "formatted_timestamp": "00:00:22.059"
-    }
-  ],
-  "event_types": [
-    "[tosse]"
-  ],
-  "word_count": 129,
-  "input": {
-    "duration_s": 25.2,
-    "original_format": "mp3",
-    "codec": "mp3",
-    "sample_rate": 8000,
-    "channels": 1
-  },
-  "language_confidence": 1.0,
-  "client_reference_id": "readme-example"
+  "text": "...",
+  "dialog": "Speaker 1: [...] ...",
+  "usage": { "audio_seconds": 25.0, "credits_consumed": 25, "processing_ms": 951 }
 }
 ```
 
-### Diagnose
+> Only need analysis? **Skip step 3** and call `CreateDiagnostic` / `CreateAudit` with your own transcript.
 
-**Request**
+### 4. Analyze or audit an existing transcript (no transcription needed)
 
-```bash
-curl https://api01-falaai.action.tec.br/v1/analyze/diagnostic \
-  -H "Authorization: Bearer fai_xxxxxx" \
-  -H "Content-Type: application/json" \
-  -d '{"dialog": "<transcription dialog>", "language": "pt-BR", "duration_seconds": 25.0}'
+```go
+transcript := "Good morning, how can I help? I need to cancel my subscription."
+
+// 5 analyses in one call: summary, reason, action, topic, sentiment
+diag, err := client.CreateDiagnostic(context.Background(), falaai.DiagnosticParams{
+	Text:            &transcript,
+	Language:        "pt-BR",
+	DurationSeconds: 81.46,
+})
+
+// Compliance risk score + violations + auditable report
+audit, err := client.CreateAudit(context.Background(), falaai.AuditParams{
+	Text:             &transcript,
+	Language:         "pt-BR",
+	ResponseLanguage: "pt-BR",
+	DurationSeconds:  81.46,
+})
 ```
 
-**Response**
+## What is FalaAI API?
 
-```json
-{
-  "id": "di-15c79d7c-7245-4af4-9a4e-ead237c1a6ed",
-  "response_language": "pt-BR",
-  "object": "analysis",
-  "analysis": {
-    "dialogue_summary": {
-      "explanation": "O cliente (Speaker 2) contatou a Novatechno (Speaker 1) para obter informações sobre um produto (código 4675005) que saiu de linha. O cliente já realizou uma pe ..."
-    },
-    "contact_reason": {
-      "explanation": "O cliente busca informação sobre qual produto substituiu o código 4675005, que saiu de linha."
-    },
-    "identified_action": {
-      "list_choice": "Sem Ação",
-      "justification": "O cliente buscou informações sobre um produto que saiu de linha, mas a conversa terminou sem uma ação definida ou resolução.",
-      "evidence_phrases": [
-        "Novatechno tudo, bom dia.",
-        "Bom dia, Mateus. Tudo bem?",
-        "Tudo bem. Não tem nada no sistema. Eu queria ver se de repente você tem alguma informação.",
-        "Quatro meia sete cinco zero zero cinco saiu de linha. Ééé, eu procurei no Google ver se o que entrou no lugar. Aí ele fala"
-      ]
-    },
-    "identified_label": {
-      "list_choice": "Pedido de Informação",
-      "justification": "O cliente busca informações sobre um produto que saiu de linha, perguntando o que o substituiu, indicando uma necessidade de dados.",
-      "evidence_phrases": [
-        "Não tem nada no sistema. Eu queria ver se de repente você tem alguma informação.",
-        "É, o produto, posso te falar o código?",
-  ... (truncated)
-```
+FalaAI API is an **AI conversation-intelligence API** for analyzing customer-service, contact-center, sales, messaging and other business conversations. It combines speech-to-text (with speaker diarization and audio-event detection), conversation analysis (summary, contact reason, action taken, topic classification, sentiment) and a **compliance/risk audit** against **COPC CX** and **ISO 18295-1**. Conversation content is processed and discarded (zero-storage).
 
-### Audit compliance
+## What can you do with FalaAI?
 
-**Request**
-
-```bash
-curl https://api01-falaai.action.tec.br/v1/analyze/auditoriaRisco \
-  -H "Authorization: Bearer fai_xxxxxx" \
-  -H "Content-Type: application/json" \
-  -d '{"dialog": "<transcription dialog>", "language": "pt-BR", "duration_seconds": 25.0, "response_format": "v2"}'
-```
-
-**Response**
-
-```json
-{
-  "response": {
-    "meta": {
-      "id": "ar-3439fd5f-1932-4ebe-bfb5-944ec1046e60",
-      "usage": {
-        "characters": 378,
-        "credits_consumed": 90,
-        "processing_ms": 6534
-      },
-      "object": "auditoria_risco",
-      "call_duration_s": 25.0,
-      "analyzed_at": "2026-09-23T17:43:02.092299",
-      "client_reference_id": "readme-example"
-    },
-    "participants": {
-      "identified": [
-        {
-          "confidence": "high",
-          "source": "input",
-          "evidence": "fornecido pelo input",
-          "interlocutor": "Speaker 1",
-          "name": "Mateus",
-          "role": "agent"
-        },
-        {
-          "confidence": "high",
-          "source": "input",
-          "evidence": "fornecido pelo input",
-          "interlocutor": "Speaker 2",
-          "name": "Cliente",
-          "role": "client"
-        }
-      ],
-      "call_direction": "inbound",
-      "role_inference_reliable": true,
-      "identification_status": "input",
-      "unidentified_items_count": 0
-    },
-    "verdict": {
-      "label": "Limpa",
-      "level_code": "LIMPA",
-      "color": "#4fff4d",
-      "icon": "mdi:check-circle",
-      "risk_matrix": {
-        "severity": "NOTE",
-        "likelihood_avg": 0.0,
-        "impact_avg": 0.0,
-        "likelihood_level": "LOW",
-        "impact_level": "LOW"
-      },
-      "applied_actions": [
-        {
-          "action_type": "nenhuma_acao",
-          "label": "Nenhuma Acao",
-          "description": "Nenhuma acao necessaria. A chamada nao apresentou deteccoes que exijam intervencao. Continuar monitoramento de rotina.",
-          "priority": "BAIXO",
-          "color": "#6B7280",
-          "icon": "mdi:check-circle-outline",
-          "condition": "sempre",
-          "reason": "condição=sempre"
-        }
-      ],
-  ... (truncated)
-```
-
-### The forensic HTML report
-
-The audit response carries **`response.html_report`** - the complete **forensic report as HTML**, encoded as a **base64 gzip** string (~19 KB). Decode it and open in a browser (or convert to PDF) to get the auditable evidence: timeline, audio events (MAC/MVAD/MOD), violations against **COPC CX** and **ISO 18295-1**, and the executive verdict.
-
-```python
-import base64, gzip, json, httpx
-
-res = httpx.post(
-    "https://api01-falaai.action.tec.br/v1/analyze/auditoriaRisco",
-    headers={"Authorization": "Bearer fai_xxxxxx"},
-    json={"dialog": dialog, "language": "pt-BR", "duration_seconds": 25.0, "response_format": "v2"},
-    timeout=900,
-).json()
-
-html = gzip.decompress(base64.b64decode(res["response"]["html_report"])).decode("utf-8")
-open("report.html", "w", encoding="utf-8").write(html)
-```
+- **Transcribe** audio to text with speaker separation and audio events.
+- **Diagnose** a conversation: summary, reason, action taken, topic and sentiment.
+- **Audit** conversations: compliance risk score, detections/violations and an auditable HTML report.
+- **Track usage**, **manage webhooks** and **email alerts**, and **health/version** checks.
 
 ## Use cases
 
-- Call and voice-note **transcription** with speaker separation
-- **Contact center quality assurance (QA)** automation
-- **Compliance auditing** against **COPC CX** and **ISO 18295-1**
-- **Risk detection** - churn risk, legal threats, escalation
-- **WhatsApp, Telegram and chat** conversation analysis
-- **CRM and help desk** enrichment
-- **Call analytics** and **speech-to-text** at scale - every call transcribed and scored
-- **Conversation intelligence** - summary, reason, action, topic and **sentiment analysis** per conversation
-- **Speaker diarization** (speaker separation) on stereo or mono audio
-- **Quality monitoring** and **agent performance** - audit 100% instead of a sample
-- Built from a single **OpenAPI** contract, so all SDKs stay in sync
-- **LGPD**-aware handling of customer conversations
+- **Contact center / Quality** — audit 100% of conversations instead of a sample.
+- **Compliance / Legal** — auditable evidence for audits and disputes.
+- **CX / Operations** — risk score, sentiment and reason per conversation.
+- **BI / Data** — typed JSON ready for your database or analytics stack.
 
-## Where it fits
+## SDK surface (Go)
 
-Plugs into **omnichannel service platforms**, **help desks**, **chatbots** and **unified messaging** - anywhere a conversation becomes text.
+| Symbol | Package | Purpose |
+|---|---|---|
+| `NewClientWithAPIKey(...)` | `falaai` | create the API client |
+| `Client.Health(ctx)` | `falaai` | health check |
+| `Client.CreateTranscription(ctx, TranscriptionParams{...})` | `falaai` | audio to text |
+| `Client.CreateDiagnostic(ctx, DiagnosticParams{...})` | `falaai` | conversation diagnostic |
+| `Client.CreateAudit(ctx, AuditParams{...})` | `falaai` | compliance risk audit |
+| `participant`, `DiagnosticParticipant`, `DiagnosticAudioEvent`, `Ptr[T]` | `falaai` | models / helpers |
 
-Common Go stacks in contact center, CRM and help desk - if you build on any of these, the SDK drops in:
+> Model IDs: `falaai-transcribe-1`, `falaai-diagnostic-1`, `falaai-risk-audit-1`.
 
-WAHA - NATS / RabbitMQ - high-performance microservices
+## Examples
 
-> Product names are trademarks of their respective owners, listed as common stacks in this ecosystem. No partnership is implied.
+Runnable examples in [`examples/`](./examples): `health.go`, `transcribe.go`, `diagnose.go`, `audit.go`.
 
-## Endpoints
+## Authentication
 
-| Method | Path | Description |
-| --- | --- | --- |
-| `POST` | `/v1/audio/transcriptions` | Audio to text, with speaker separation |
-| `POST` | `/v1/analyze/diagnostic` | Conversation analysis - summary, reason, action, topic, sentiment |
-| `POST` | `/v1/analyze/auditoriaRisco` | Compliance audit - risk score and violations |
-| `GET` | `/v1/health` | Service health check (public) |
+Every request requires `Authorization: Bearer fai_<your_key>` — except the public endpoints (`GET/HEAD /v1/health`, `GET /api/version`). The key is set in `NewClientWithAPIKey(...)`.
 
-All endpoints require `Authorization: Bearer fai_xxxxxx`.
-Full reference: <https://api01-falaai.action.tec.br/docs>
-Other operations: usage logs, webhooks and email alerts - see the full reference.
+## Error handling
 
-## Links
+Methods return `(result, error)`. Check the error and handle non-2xx failures.
 
-- **Product:** <https://falaai.action.tec.br/api>
-- **API reference:** <https://api01-falaai.action.tec.br/docs>
-- **Get an API key:** <https://falaai.action.tec.br/api/auth>
-- **Package (pkg.go.dev):** <https://pkg.go.dev/github.com/actiontecbr/falaai-api>
-- **Source:** <https://github.com/ActionTecBr/falaai-api>
+```go
+health, err := client.Health(context.Background())
+if err != nil {
+	log.Fatalf("FalaAI API error: %v", err)
+}
+fmt.Println(health.Status)
+```
 
-## Other official SDKs
+## Where to integrate (this SDK)
 
-| Language | Install | Package |
-| --- | --- | --- |
-| **Python** | `pip install falaai-api` | [PyPI](https://pypi.org/project/falaai-api/) |
-| **Node.js / TypeScript** | `npm install falaai-api` | [npm](https://www.npmjs.com/package/falaai-api) |
-| **PHP** | `composer require actiontecbr/falaai-api` | [Packagist](https://packagist.org/packages/actiontecbr/falaai-api) |
-| **Go** | `go get github.com/actiontecbr/falaai-api` | [pkg.go.dev](https://pkg.go.dev/github.com/actiontecbr/falaai-api) |
-| **Ruby** | `gem install falaai-api` | [RubyGems](https://rubygems.org/gems/falaai-api) |
-| **Java** | `io.github.actiontecbr:falaai-api` | [Maven Central](https://central.sonatype.com/artifact/io.github.actiontecbr/falaai-api) |
-| **.NET / C#** | `dotnet add package FalaAI.Api` | [NuGet](https://www.nuget.org/packages/FalaAI.Api) |
+FalaAI is language-independent; this package targets **Go** backends.
 
-## Requirements, support and more
+| Platform / environment (this SDK's language: **Go**) | Integration |
+|---|---|
+| **Mattermost** | `falaai-api-go` |
+| Go microservices / workers | `falaai-api-go` |
+| High-throughput pipelines / batch jobs | `falaai-api-go` |
+| Other stacks (3CX, Salesforce, Genesys...) | REST / cURL — [API reference](https://api01-falaai.action.tec.br/docs) (or the SDK for that backend's language) |
 
-- **Requirements:** an API key (`fai_...`) and a runtime able to upload audio files.
-- **Documentation:** <https://api01-falaai.action.tec.br/docs>
-- **Support:** open an issue in this repository.
-- **Security:** responsible disclosure policy in [SECURITY.md](SECURITY.md).
-- **Contributing:** see [CONTRIBUTING.md](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md).
-- **Changelog:** see [CHANGELOG.md](CHANGELOG.md).
+> These are **integration examples**, not certified native integrations. Any platform can integrate through **REST / cURL** — see the [API reference](https://api01-falaai.action.tec.br/docs). Authenticated calls use `Authorization: Bearer fai_<key>`.
+
+## Production usage
+
+- Store API keys in environment variables or a secret manager — never hard-code.
+- Reuse a single `*falaai.Client` across requests.
+- Pass a `context.Context` for timeouts/cancellation.
+- Handle returned errors explicitly.
+
+## Compatibility
+
+| Requirement | Version |
+|---|---|
+| Go | 1.24+ |
+| API | v1.21.49 |
+
+## Documentation
+
+- **SDK docs (this language):** <https://actiontecbr.github.io/falaai-api-go/>
+- **API reference (Swagger UI):** <https://api01-falaai.action.tec.br/docs>
+- **OpenAPI contract:** <https://api01-falaai.action.tec.br/openapi.json>
+- **Sandbox:** <https://falaai.action.tec.br/api#playground>
+- **Quickstart:** <https://falaai.action.tec.br/api/quickstart>
+- **Product page:** <https://falaai.action.tec.br/api>
+
+## Versioning
+
+Semantic versioning; tagged `v<version>` (tracks the API version `1.21.49`). See [CHANGELOG.md](CHANGELOG.md) and [Releases](https://github.com/ActionTecBr/falaai-api-go/releases).
+
+## Security
+
+See [SECURITY.md](SECURITY.md). Never commit real keys — use environment variables.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT (c) 2026 Action Tec Br - see [LICENSE](LICENSE).
+[MIT](LICENSE).
+
+## Links
+
+- Website: <https://falaai.action.tec.br>
+- API base URL: <https://api01-falaai.action.tec.br>
+- GitHub organization: <https://github.com/ActionTecBr>
+- Other SDKs: Python, Node.js, PHP, Ruby, Java, .NET.
+
+### Platform documentation (orientation)
+
+- Mattermost — <https://developers.mattermost.com>

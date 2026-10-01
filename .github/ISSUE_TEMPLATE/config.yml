@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/ActionTecBr/falaai-api/security/policy
+    url: https://github.com/ActionTecBr/falaai-api-go/security/policy
     about: Please report security issues privately - do not open a public issue.
   - name: FalaAI API documentation
     url: https://api01-falaai.action.tec.br/docs

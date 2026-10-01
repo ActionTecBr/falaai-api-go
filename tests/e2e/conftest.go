@@ -1,12 +1,10 @@
 package e2e
 
 import (
-	"context"
-	"net/http"
 	"os"
 	"strings"
 
-	falaai "github.com/actiontecbr/falaai-api"
+	falaai "github.com/actiontecbr/falaai-api-go"
 )
 
 var envCache map[string]string
@@ -62,13 +60,6 @@ func TestKey() string { return getenv("FALAAI_TEST_KEY") }
 
 func AudioPath() string { return getenv("FALAAI_E2E_AUDIO") }
 
-func authEditor(key string) falaai.RequestEditorFn {
-	return func(_ context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", "Bearer "+key)
-		return nil
-	}
-}
-
-func NewClient(baseURL, key string) (*falaai.ClientWithResponses, error) {
-	return falaai.NewClientWithResponses(baseURL, falaai.WithRequestEditorFn(authEditor(key)))
+func NewClient(baseURL, key string) (*falaai.APIClient, error) {
+	return falaai.NewClient(baseURL, key)
 }

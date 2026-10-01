@@ -17,4 +17,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generated from the FalaAI API OpenAPI contract, version 1.21.47.
 - End-to-end test suite (19 tests).
 
-[1.21.47]: https://github.com/ActionTecBr/falaai-api/releases/tag/v1.21.47
+[1.21.47]: https://github.com/ActionTecBr/falaai-api-go/releases/tag/v1.21.47

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
-
-	falaai "github.com/actiontecbr/falaai-api"
 )
 
 func mustStr(t *testing.T, label, v string) {
@@ -23,7 +21,7 @@ func mustGt0(t *testing.T, label string, v float32) {
 	}
 }
 
-func mustGt0Int(t *testing.T, label string, v int) {
+func mustGt0Int(t *testing.T, label string, v int32) {
 	t.Helper()
 	if v <= 0 {
 		t.Fatalf("%s: %d <= 0", label, v)
@@ -32,15 +30,15 @@ func mustGt0Int(t *testing.T, label string, v int) {
 
 func TestHealthGet(t *testing.T) {
 	c, _ := NewClient(BaseURL(), TestKey())
-	r, err := c.HealthCheckWithResponse(context.Background())
+	p, httpResp, err := c.HealthAPI.HealthCheck(context.Background()).Execute()
 	if err != nil {
 		t.Fatal(err)
 	}
-	Log("health_get", "GET", "/v1/health", nil, r.JSON200, fmt.Sprintf("HTTP %d", r.StatusCode()), r.StatusCode())
-	if r.StatusCode() != 200 {
-		t.Fatalf("status %d", r.StatusCode())
+	status := httpResp.StatusCode
+	Log("health_get", "GET", "/v1/health", nil, p, fmt.Sprintf("HTTP %d", status), status)
+	if status != 200 {
+		t.Fatalf("status %d", status)
 	}
-	p := r.JSON200
 	if p.Status != "ok" {
 		t.Fatalf("status != ok")
 	}
@@ -68,15 +66,15 @@ func TestHealthHead(t *testing.T) {
 
 func TestVersion(t *testing.T) {
 	c, _ := NewClient(BaseURL(), TestKey())
-	r, err := c.GetVersionApiVersionGetWithResponse(context.Background())
+	p, httpResp, err := c.VersionAPI.GetVersionApiVersionGet(context.Background()).Execute()
 	if err != nil {
 		t.Fatal(err)
 	}
-	Log("version", "GET", "/api/version", nil, r.JSON200, fmt.Sprintf("HTTP %d", r.StatusCode()), r.StatusCode())
-	if r.StatusCode() != 200 {
-		t.Fatalf("status %d", r.StatusCode())
+	status := httpResp.StatusCode
+	Log("version", "GET", "/api/version", nil, p, fmt.Sprintf("HTTP %d", status), status)
+	if status != 200 {
+		t.Fatalf("status %d", status)
 	}
-	p := r.JSON200
 	if p.Service != "FalaAI API" {
 		t.Fatalf("service != FalaAI API")
 	}
@@ -86,21 +84,19 @@ func TestVersion(t *testing.T) {
 
 func TestUsageLog(t *testing.T) {
 	c, _ := NewClient(BaseURL(), TestKey())
-	page, limit := 1, 5
-	p := falaai.GetUsageLogV1UsageLogGetParams{Page: &page, Limit: &limit}
-	r, err := c.GetUsageLogV1UsageLogGetWithResponse(context.Background(), &p)
+	r, httpResp, err := c.UsageAPI.GetUsageLogV1UsageLogGet(context.Background()).Page(1).Limit(5).Execute()
 	if err != nil {
 		t.Fatal(err)
 	}
-	Log("usage_log", "GET", "/v1/usage/log", map[string]int{"page": 1, "limit": 5}, r.JSON200, fmt.Sprintf("HTTP %d", r.StatusCode()), r.StatusCode())
-	if r.StatusCode() != 200 {
-		t.Fatalf("status %d", r.StatusCode())
+	status := httpResp.StatusCode
+	Log("usage_log", "GET", "/v1/usage/log", map[string]int{"page": 1, "limit": 5}, r, fmt.Sprintf("HTTP %d", status), status)
+	if status != 200 {
+		t.Fatalf("status %d", status)
 	}
-	res := r.JSON200
-	if res.Page != 1 || res.Limit != 5 {
-		t.Fatalf("page/limit %d/%d", res.Page, res.Limit)
+	if r.Page != 1 || r.Limit != 5 {
+		t.Fatalf("page/limit %d/%d", r.Page, r.Limit)
 	}
-	for _, it := range res.Data {
+	for _, it := range r.Data {
 		mustStr(t, "id", it.Id)
 		mustStr(t, "endpoint", it.Endpoint)
 		mustStr(t, "status", it.Status)
@@ -112,15 +108,16 @@ func TestUsageLog(t *testing.T) {
 
 func TestUsageByKey(t *testing.T) {
 	c, _ := NewClient(BaseURL(), TestKey())
-	r, err := c.GetUsageByKeyV1UsageByKeyGetWithResponse(context.Background(), &falaai.GetUsageByKeyV1UsageByKeyGetParams{})
+	r, httpResp, err := c.UsageAPI.GetUsageByKeyV1UsageByKeyGet(context.Background()).Execute()
 	if err != nil {
 		t.Fatal(err)
 	}
-	Log("usage_by_key", "GET", "/v1/usage/by-key", nil, r.JSON200, fmt.Sprintf("HTTP %d", r.StatusCode()), r.StatusCode())
-	if r.StatusCode() != 200 {
-		t.Fatalf("status %d", r.StatusCode())
+	status := httpResp.StatusCode
+	Log("usage_by_key", "GET", "/v1/usage/by-key", nil, r, fmt.Sprintf("HTTP %d", status), status)
+	if status != 200 {
+		t.Fatalf("status %d", status)
 	}
-	for _, it := range *r.JSON200 {
+	for _, it := range r {
 		mustStr(t, "key_id", it.KeyId)
 		_ = it.KeyName
 		_ = it.TotalCredits
@@ -130,21 +127,19 @@ func TestUsageByKey(t *testing.T) {
 
 func TestWebhooksList(t *testing.T) {
 	c, _ := NewClient(BaseURL(), TestKey())
-	page, limit := 1, 5
-	p := falaai.ListWebhooksV1WebhooksGetParams{Page: &page, Limit: &limit}
-	r, err := c.ListWebhooksV1WebhooksGetWithResponse(context.Background(), &p)
+	r, httpResp, err := c.WebhooksAPI.ListWebhooksV1WebhooksGet(context.Background()).Page(1).Limit(5).Execute()
 	if err != nil {
 		t.Fatal(err)
 	}
-	Log("webhooks_list", "GET", "/v1/webhooks", map[string]int{"page": 1, "limit": 5}, r.JSON200, fmt.Sprintf("HTTP %d", r.StatusCode()), r.StatusCode())
-	if r.StatusCode() != 200 {
-		t.Fatalf("status %d", r.StatusCode())
+	status := httpResp.StatusCode
+	Log("webhooks_list", "GET", "/v1/webhooks", map[string]int{"page": 1, "limit": 5}, r, fmt.Sprintf("HTTP %d", status), status)
+	if status != 200 {
+		t.Fatalf("status %d", status)
 	}
-	res := r.JSON200
-	if res.Page != 1 || res.Limit != 5 {
-		t.Fatalf("page/limit %d/%d", res.Page, res.Limit)
+	if r.Page != 1 || r.Limit != 5 {
+		t.Fatalf("page/limit %d/%d", r.Page, r.Limit)
 	}
-	for _, w := range res.Data {
+	for _, w := range r.Data {
 		mustStr(t, "id", w.Id)
 		mustStr(t, "user_id", w.UserId)
 		_ = w.Name
@@ -161,21 +156,19 @@ func TestWebhooksList(t *testing.T) {
 
 func TestEmailAlertsList(t *testing.T) {
 	c, _ := NewClient(BaseURL(), TestKey())
-	page, limit := 1, 5
-	p := falaai.ListEmailAlertsV1EmailAlertsGetParams{Page: &page, Limit: &limit}
-	r, err := c.ListEmailAlertsV1EmailAlertsGetWithResponse(context.Background(), &p)
+	r, httpResp, err := c.EmailAlertsAPI.ListEmailAlertsV1EmailAlertsGet(context.Background()).Page(1).Limit(5).Execute()
 	if err != nil {
 		t.Fatal(err)
 	}
-	Log("email_alerts_list", "GET", "/v1/email-alerts", map[string]int{"page": 1, "limit": 5}, r.JSON200, fmt.Sprintf("HTTP %d", r.StatusCode()), r.StatusCode())
-	if r.StatusCode() != 200 {
-		t.Fatalf("status %d", r.StatusCode())
+	status := httpResp.StatusCode
+	Log("email_alerts_list", "GET", "/v1/email-alerts", map[string]int{"page": 1, "limit": 5}, r, fmt.Sprintf("HTTP %d", status), status)
+	if status != 200 {
+		t.Fatalf("status %d", status)
 	}
-	res := r.JSON200
-	if res.Page != 1 || res.Limit != 5 {
-		t.Fatalf("page/limit %d/%d", res.Page, res.Limit)
+	if r.Page != 1 || r.Limit != 5 {
+		t.Fatalf("page/limit %d/%d", r.Page, r.Limit)
 	}
-	for _, a := range res.Data {
+	for _, a := range r.Data {
 		mustStr(t, "id", a.Id)
 		mustStr(t, "user_id", a.UserId)
 		_ = a.Name

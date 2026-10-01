@@ -50,8 +50,8 @@ func Test422DiagnosticMissing(t *testing.T) {
 
 func Test422AuditoriaMissing(t *testing.T) {
 	body := map[string]any{"language": "pt-BR", "dialog": "Speaker 1: ola"}
-	st, out := postJSON(t, "/v1/analyze/auditoriaRisco", body)
-	Log("errors_422_aud", "POST", "/v1/analyze/auditoriaRisco", body, out, fmt.Sprintf("HTTP %d", st), st)
+	st, out := postJSON(t, "/v1/analyze/riskAudit", body)
+	Log("errors_422_aud", "POST", "/v1/analyze/riskAudit", body, out, fmt.Sprintf("HTTP %d", st), st)
 	if st != 422 {
 		t.Fatalf("status %d", st)
 	}
@@ -59,8 +59,8 @@ func Test422AuditoriaMissing(t *testing.T) {
 
 func Test422ExtraForbidden(t *testing.T) {
 	body := map[string]any{"dialog": "Speaker 1: ola", "language": "pt-BR", "response_language": "pt-BR", "duration_seconds": 10, "threshold_multiplier": 1}
-	st, out := postJSON(t, "/v1/analyze/auditoriaRisco", body)
-	Log("errors_422_extra", "POST", "/v1/analyze/auditoriaRisco", body, out, fmt.Sprintf("HTTP %d", st), st)
+	st, out := postJSON(t, "/v1/analyze/riskAudit", body)
+	Log("errors_422_extra", "POST", "/v1/analyze/riskAudit", body, out, fmt.Sprintf("HTTP %d", st), st)
 	if st != 422 {
 		t.Fatalf("status %d", st)
 	}
@@ -68,8 +68,8 @@ func Test422ExtraForbidden(t *testing.T) {
 
 func Test400AuditoriaLanguage(t *testing.T) {
 	body := map[string]any{"dialog": "Speaker 1: ola", "language": "xx", "response_language": "pt-BR", "duration_seconds": 10}
-	st, out := postJSON(t, "/v1/analyze/auditoriaRisco", body)
-	Log("errors_400_aud", "POST", "/v1/analyze/auditoriaRisco", body, out, fmt.Sprintf("HTTP %d", st), st)
+	st, out := postJSON(t, "/v1/analyze/riskAudit", body)
+	Log("errors_400_aud", "POST", "/v1/analyze/riskAudit", body, out, fmt.Sprintf("HTTP %d", st), st)
 	if st != 400 {
 		t.Fatalf("status %d", st)
 	}

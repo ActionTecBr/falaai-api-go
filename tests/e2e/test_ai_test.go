@@ -1,16 +1,12 @@
 package e2e
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"mime/multipart"
-	"net/textproto"
 	"os"
 	"testing"
 
-	falaai "github.com/actiontecbr/falaai-api"
+	falaai "github.com/actiontecbr/falaai-api-go"
 )
 
 func TestAiChain(t *testing.T) {
@@ -21,32 +17,22 @@ func TestAiChain(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var buf bytes.Buffer
-	mw := multipart.NewWriter(&buf)
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", `form-data; name="file"; filename="analise_25s.mp3"`)
-	h.Set("Content-Type", "audio/mpeg")
-	fw, _ := mw.CreatePart(h)
-	if _, err := io.Copy(fw, f); err != nil {
-		t.Fatal(err)
-	}
-	f.Close()
-	_ = mw.WriteField("model", "falaai-transcribe-1")
-	_ = mw.WriteField("language", "pt")
-	_ = mw.WriteField("client_reference_id", "e2e-call-2026-09-22-001")
-	mw.Close()
+	defer f.Close()
 
-	tr, err := c.CreateTranscriptionV1AudioTranscriptionsPostWithBodyWithResponse(ctx, mw.FormDataContentType(), &buf)
+	tr, httpResp, err := c.SpeechAPI.CreateTranscriptionV1AudioTranscriptionsPost(ctx).
+		File(f).Model("falaai-transcribe-1").Language("pt").
+		ClientReferenceId("e2e-call-2026-09-22-001").Execute()
 	if err != nil {
 		t.Fatal(err)
 	}
+	status := httpResp.StatusCode
 	Log("transcriptions", "POST", "/v1/audio/transcriptions",
 		map[string]string{"file": "analise_25s.mp3", "model": "falaai-transcribe-1", "language": "pt", "client_reference_id": "e2e-call-2026-09-22-001"},
-		tr.JSON200, fmt.Sprintf("HTTP %d", tr.StatusCode()), tr.StatusCode())
-	if tr.StatusCode() != 200 {
-		t.Fatalf("transcribe status %d | body: %s", tr.StatusCode(), string(tr.Body))
+		tr, fmt.Sprintf("HTTP %d", status), status)
+	if status != 200 {
+		t.Fatalf("transcribe status %d", status)
 	}
-	tp := tr.JSON200
+	tp := tr
 	mustStr(t, "id", tp.Id)
 	mustStr(t, "object", tp.Object)
 	mustStr(t, "model", tp.Model)
@@ -79,15 +65,16 @@ func TestAiChain(t *testing.T) {
 	txt := tp.Text
 
 	dbody := falaai.DiagnosticRequest{Dialog: &dialog, DurationSeconds: dur, Language: "pt-BR", Text: &txt, ClientReferenceId: sptr("e2e-diag-2026-09-22-001")}
-	d, err := c.CreateDiagnosticV1AnalyzeDiagnosticPostWithResponse(ctx, dbody)
+	d, httpResp, err := c.AnalysisAPI.CreateDiagnosticV1AnalyzeDiagnosticPost(ctx).DiagnosticRequest(dbody).Execute()
 	if err != nil {
 		t.Fatal(err)
 	}
-	Log("diagnostic", "POST", "/v1/analyze/diagnostic", dbody, d.JSON200, fmt.Sprintf("HTTP %d", d.StatusCode()), d.StatusCode())
-	if d.StatusCode() != 200 {
-		t.Fatalf("diagnostic status %d", d.StatusCode())
+	status = httpResp.StatusCode
+	Log("diagnostic", "POST", "/v1/analyze/diagnostic", dbody, d, fmt.Sprintf("HTTP %d", status), status)
+	if status != 200 {
+		t.Fatalf("diagnostic status %d", status)
 	}
-	dp := d.JSON200
+	dp := d
 	mustStr(t, "id", dp.Id)
 	mustStr(t, "response_language", dp.ResponseLanguage)
 	if dp.Object != "analysis" {
@@ -106,29 +93,29 @@ func TestAiChain(t *testing.T) {
 	_ = dp.Usage.CreditsConsumed
 	_ = dp.Usage.ProcessingMs
 
-	cd := falaai.Inbound
-	abody := falaai.AuditoriaRiscoRequest{
+	abody := falaai.RiskAuditRequest{
 		Dialog:           &dialog,
 		DurationSeconds:  dur,
 		Language:         "pt-BR",
 		ResponseLanguage: "pt-BR",
 		Text:             &txt,
-		CallDirection:    &cd,
-		Participants: &[]falaai.Participant{
-			{Interlocutor: "Speaker 1", Name: sptr("Mateus"), Role: falaai.ParticipantRoleAgent},
-			{Interlocutor: "Speaker 2", Name: sptr("Cliente"), Role: falaai.ParticipantRoleClient},
+		CallDirection:    sptr("inbound"),
+		Participants: []falaai.Participant{
+			{Interlocutor: "Speaker 1", Name: sptr("Mateus"), Role: "agent"},
+			{Interlocutor: "Speaker 2", Name: sptr("Cliente"), Role: "client"},
 		},
 		ClientReferenceId: sptr("e2e-aud-2026-09-22-001"),
 	}
-	a, err := c.CreateAuditoriaRiscoV1AnalyzeAuditoriaRiscoPostWithResponse(ctx, abody)
+	a, httpResp, err := c.AnalysisAPI.CreateRiskAuditV1AnalyzeRiskAuditPost(ctx).RiskAuditRequest(abody).Execute()
 	if err != nil {
 		t.Fatal(err)
 	}
-	Log("auditoriaRisco", "POST", "/v1/analyze/auditoriaRisco", abody, a.JSON200, fmt.Sprintf("HTTP %d", a.StatusCode()), a.StatusCode())
-	if a.StatusCode() != 200 {
-		t.Fatalf("auditoria status %d", a.StatusCode())
+	status = httpResp.StatusCode
+	Log("riskAudit", "POST", "/v1/analyze/riskAudit", abody, a, fmt.Sprintf("HTTP %d", status), status)
+	if status != 200 {
+		t.Fatalf("riskAudit status %d", status)
 	}
-	pub := a.JSON200.Response
+	pub := a.Response
 	mustStr(t, "meta.id", pub.Meta.Id)
 	_ = pub.Meta.Usage.Characters
 	_ = pub.Meta.Usage.CreditsConsumed
@@ -145,8 +132,8 @@ func TestAiChain(t *testing.T) {
 	}
 	_ = pub.Indexer
 	_ = pub.Summary
-	if pub.AcoesI18n == nil {
-		t.Fatalf("acoes_i18n ausente")
+	if pub.ActionsI18n == nil {
+		t.Fatalf("actions_i18n ausente")
 	}
 	_ = pub.AuditDecisions
 	_ = pub.ScoringExplanation

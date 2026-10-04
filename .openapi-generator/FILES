@@ -10,6 +10,7 @@ api_speech.go
 api_usage.go
 api_version.go
 api_webhooks.go
+api_whatsapp.go
 client.go
 configuration.go
 docs/AnalysisAPI.md
@@ -73,6 +74,12 @@ docs/WebhookEvent.md
 docs/WebhookItem.md
 docs/WebhookListResponse.md
 docs/WebhooksAPI.md
+docs/WhatsappAPI.md
+docs/WhatsappConversation.md
+docs/WhatsappConversationsResponse.md
+docs/WhatsappMeta.md
+docs/WhatsappSpeaker.md
+docs/WhatsappUsage.md
 git_push.sh
 go.mod
 go.sum
@@ -130,6 +137,11 @@ model_version_response.go
 model_webhook_event.go
 model_webhook_item.go
 model_webhook_list_response.go
+model_whatsapp_conversation.go
+model_whatsapp_conversations_response.go
+model_whatsapp_meta.go
+model_whatsapp_speaker.go
+model_whatsapp_usage.go
 response.go
 test/api_analysis_test.go
 test/api_email_alerts_test.go
@@ -138,4 +150,5 @@ test/api_speech_test.go
 test/api_usage_test.go
 test/api_version_test.go
 test/api_webhooks_test.go
+test/api_whatsapp_test.go
 utils.go

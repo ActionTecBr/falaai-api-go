@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 **ResponseLanguage** | **string** | Language for analysis results (labels, categories, levels, actions, HTML report). Can differ from &#39;language&#39;. Accepted: pt-BR, en-US, es-ES. | 
 **CallDirection** | Pointer to **string** | Who originated the call. inbound&#x3D;client called, outbound&#x3D;company called. If omitted, LLM infers from context. | [optional] 
 **Participants** | Pointer to [**[]Participant**](Participant.md) | Explicit participant roles. If omitted, LLM infers from dialog (Lei 17). When provided, used as ground truth — no inference. | [optional] 
-**ResponseFormat** | Pointer to **string** | Response format version. v1&#x3D;legacy flat PT-BR, v2&#x3D;structured EN-US blocks. | [optional] [default to "v2"]
+**ResponseFormat** | Pointer to **string** | Response format version. Only &#39;v2&#39; (structured EN-US blocks) is available today. | [optional] [default to "v2"]
 **ClientReferenceId** | Pointer to **string** | Optional client-supplied ID echoed verbatim in the response. Use to correlate/sync with your system. Accepted charset: [A-Za-z0-9._:-], max 128 chars. Not idempotency. | [optional] 
 
 ## Methods

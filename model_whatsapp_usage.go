@@ -16,43 +16,70 @@ import (
 	"fmt"
 )
 
-// checks if the RiskAuditUsageV2 type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &RiskAuditUsageV2{}
+// checks if the WhatsappUsage type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &WhatsappUsage{}
 
-// RiskAuditUsageV2 struct for RiskAuditUsageV2
-type RiskAuditUsageV2 struct {
-	// Characters analyzed
+// WhatsappUsage struct for WhatsappUsage
+type WhatsappUsage struct {
+	// Number of conversations returned
+	Conversations int32 `json:"conversations"`
+	// Total characters across conversations
 	Characters int32 `json:"characters"`
-	// Credits consumed
+	// Credits consumed (1 per conversation)
 	CreditsConsumed int32 `json:"credits_consumed"`
-	// Processing time (ms)
+	// Total processing time in milliseconds
 	ProcessingMs int32 `json:"processing_ms"`
 }
 
-type _RiskAuditUsageV2 RiskAuditUsageV2
+type _WhatsappUsage WhatsappUsage
 
-// NewRiskAuditUsageV2 instantiates a new RiskAuditUsageV2 object
+// NewWhatsappUsage instantiates a new WhatsappUsage object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewRiskAuditUsageV2(characters int32, creditsConsumed int32, processingMs int32) *RiskAuditUsageV2 {
-	this := RiskAuditUsageV2{}
+func NewWhatsappUsage(conversations int32, characters int32, creditsConsumed int32, processingMs int32) *WhatsappUsage {
+	this := WhatsappUsage{}
+	this.Conversations = conversations
 	this.Characters = characters
 	this.CreditsConsumed = creditsConsumed
 	this.ProcessingMs = processingMs
 	return &this
 }
 
-// NewRiskAuditUsageV2WithDefaults instantiates a new RiskAuditUsageV2 object
+// NewWhatsappUsageWithDefaults instantiates a new WhatsappUsage object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewRiskAuditUsageV2WithDefaults() *RiskAuditUsageV2 {
-	this := RiskAuditUsageV2{}
+func NewWhatsappUsageWithDefaults() *WhatsappUsage {
+	this := WhatsappUsage{}
 	return &this
 }
 
+// GetConversations returns the Conversations field value
+func (o *WhatsappUsage) GetConversations() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.Conversations
+}
+
+// GetConversationsOk returns a tuple with the Conversations field value
+// and a boolean to check if the value has been set.
+func (o *WhatsappUsage) GetConversationsOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Conversations, true
+}
+
+// SetConversations sets field value
+func (o *WhatsappUsage) SetConversations(v int32) {
+	o.Conversations = v
+}
+
 // GetCharacters returns the Characters field value
-func (o *RiskAuditUsageV2) GetCharacters() int32 {
+func (o *WhatsappUsage) GetCharacters() int32 {
 	if o == nil {
 		var ret int32
 		return ret
@@ -63,7 +90,7 @@ func (o *RiskAuditUsageV2) GetCharacters() int32 {
 
 // GetCharactersOk returns a tuple with the Characters field value
 // and a boolean to check if the value has been set.
-func (o *RiskAuditUsageV2) GetCharactersOk() (*int32, bool) {
+func (o *WhatsappUsage) GetCharactersOk() (*int32, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -71,12 +98,12 @@ func (o *RiskAuditUsageV2) GetCharactersOk() (*int32, bool) {
 }
 
 // SetCharacters sets field value
-func (o *RiskAuditUsageV2) SetCharacters(v int32) {
+func (o *WhatsappUsage) SetCharacters(v int32) {
 	o.Characters = v
 }
 
 // GetCreditsConsumed returns the CreditsConsumed field value
-func (o *RiskAuditUsageV2) GetCreditsConsumed() int32 {
+func (o *WhatsappUsage) GetCreditsConsumed() int32 {
 	if o == nil {
 		var ret int32
 		return ret
@@ -87,7 +114,7 @@ func (o *RiskAuditUsageV2) GetCreditsConsumed() int32 {
 
 // GetCreditsConsumedOk returns a tuple with the CreditsConsumed field value
 // and a boolean to check if the value has been set.
-func (o *RiskAuditUsageV2) GetCreditsConsumedOk() (*int32, bool) {
+func (o *WhatsappUsage) GetCreditsConsumedOk() (*int32, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -95,12 +122,12 @@ func (o *RiskAuditUsageV2) GetCreditsConsumedOk() (*int32, bool) {
 }
 
 // SetCreditsConsumed sets field value
-func (o *RiskAuditUsageV2) SetCreditsConsumed(v int32) {
+func (o *WhatsappUsage) SetCreditsConsumed(v int32) {
 	o.CreditsConsumed = v
 }
 
 // GetProcessingMs returns the ProcessingMs field value
-func (o *RiskAuditUsageV2) GetProcessingMs() int32 {
+func (o *WhatsappUsage) GetProcessingMs() int32 {
 	if o == nil {
 		var ret int32
 		return ret
@@ -111,7 +138,7 @@ func (o *RiskAuditUsageV2) GetProcessingMs() int32 {
 
 // GetProcessingMsOk returns a tuple with the ProcessingMs field value
 // and a boolean to check if the value has been set.
-func (o *RiskAuditUsageV2) GetProcessingMsOk() (*int32, bool) {
+func (o *WhatsappUsage) GetProcessingMsOk() (*int32, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -119,11 +146,11 @@ func (o *RiskAuditUsageV2) GetProcessingMsOk() (*int32, bool) {
 }
 
 // SetProcessingMs sets field value
-func (o *RiskAuditUsageV2) SetProcessingMs(v int32) {
+func (o *WhatsappUsage) SetProcessingMs(v int32) {
 	o.ProcessingMs = v
 }
 
-func (o RiskAuditUsageV2) MarshalJSON() ([]byte, error) {
+func (o WhatsappUsage) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -131,19 +158,21 @@ func (o RiskAuditUsageV2) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o RiskAuditUsageV2) ToMap() (map[string]interface{}, error) {
+func (o WhatsappUsage) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	toSerialize["conversations"] = o.Conversations
 	toSerialize["characters"] = o.Characters
 	toSerialize["credits_consumed"] = o.CreditsConsumed
 	toSerialize["processing_ms"] = o.ProcessingMs
 	return toSerialize, nil
 }
 
-func (o *RiskAuditUsageV2) UnmarshalJSON(data []byte) (err error) {
+func (o *WhatsappUsage) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
+		"conversations",
 		"characters",
 		"credits_consumed",
 		"processing_ms",
@@ -163,53 +192,53 @@ func (o *RiskAuditUsageV2) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varRiskAuditUsageV2 := _RiskAuditUsageV2{}
+	varWhatsappUsage := _WhatsappUsage{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varRiskAuditUsageV2)
+	err = decoder.Decode(&varWhatsappUsage)
 
 	if err != nil {
 		return err
 	}
 
-	*o = RiskAuditUsageV2(varRiskAuditUsageV2)
+	*o = WhatsappUsage(varWhatsappUsage)
 
 	return err
 }
 
-type NullableRiskAuditUsageV2 struct {
-	value *RiskAuditUsageV2
+type NullableWhatsappUsage struct {
+	value *WhatsappUsage
 	isSet bool
 }
 
-func (v NullableRiskAuditUsageV2) Get() *RiskAuditUsageV2 {
+func (v NullableWhatsappUsage) Get() *WhatsappUsage {
 	return v.value
 }
 
-func (v *NullableRiskAuditUsageV2) Set(val *RiskAuditUsageV2) {
+func (v *NullableWhatsappUsage) Set(val *WhatsappUsage) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableRiskAuditUsageV2) IsSet() bool {
+func (v NullableWhatsappUsage) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableRiskAuditUsageV2) Unset() {
+func (v *NullableWhatsappUsage) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableRiskAuditUsageV2(val *RiskAuditUsageV2) *NullableRiskAuditUsageV2 {
-	return &NullableRiskAuditUsageV2{value: val, isSet: true}
+func NewNullableWhatsappUsage(val *WhatsappUsage) *NullableWhatsappUsage {
+	return &NullableWhatsappUsage{value: val, isSet: true}
 }
 
-func (v NullableRiskAuditUsageV2) MarshalJSON() ([]byte, error) {
+func (v NullableWhatsappUsage) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableRiskAuditUsageV2) UnmarshalJSON(src []byte) error {
+func (v *NullableWhatsappUsage) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

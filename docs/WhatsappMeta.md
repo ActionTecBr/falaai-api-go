@@ -13,19 +13,20 @@ Name | Type | Description | Notes
 **End** | **string** | Window end (ISO) | 
 **GapMinutes** | **float32** | Gap used to split conversations | 
 **MinMessages** | **int32** | Minimum messages per conversation | 
-**CharsPerMinute** | **float32** | Chars per minute used to estimate duration | 
 **Turns** | **int32** | Total parsed turns | 
 **SystemLines** | **int32** | System lines ignored | 
 **ConversationsTotal** | **int32** | Conversations before window filter | 
 **ConversationsInWindow** | **int32** | Conversations overlapping the window | 
 **MonologuesDropped** | **int32** | Single-speaker conversations dropped | 
 **ConversationsSelected** | **int32** | Final conversations returned | 
+**VoiceNote** | **bool** | Voice/video medias were transcribed | 
+**Expression** | **bool** | Visual expressions were described | 
 
 ## Methods
 
 ### NewWhatsappMeta
 
-`func NewWhatsappMeta(file string, chatTxt string, format string, dateFormat string, timezone string, start string, end string, gapMinutes float32, minMessages int32, charsPerMinute float32, turns int32, systemLines int32, conversationsTotal int32, conversationsInWindow int32, monologuesDropped int32, conversationsSelected int32, ) *WhatsappMeta`
+`func NewWhatsappMeta(file string, chatTxt string, format string, dateFormat string, timezone string, start string, end string, gapMinutes float32, minMessages int32, turns int32, systemLines int32, conversationsTotal int32, conversationsInWindow int32, monologuesDropped int32, conversationsSelected int32, voiceNote bool, expression bool, ) *WhatsappMeta`
 
 NewWhatsappMeta instantiates a new WhatsappMeta object
 This constructor will assign default values to properties that have it defined,
@@ -220,26 +221,6 @@ and a boolean to check if the value has been set.
 SetMinMessages sets MinMessages field to given value.
 
 
-### GetCharsPerMinute
-
-`func (o *WhatsappMeta) GetCharsPerMinute() float32`
-
-GetCharsPerMinute returns the CharsPerMinute field if non-nil, zero value otherwise.
-
-### GetCharsPerMinuteOk
-
-`func (o *WhatsappMeta) GetCharsPerMinuteOk() (*float32, bool)`
-
-GetCharsPerMinuteOk returns a tuple with the CharsPerMinute field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetCharsPerMinute
-
-`func (o *WhatsappMeta) SetCharsPerMinute(v float32)`
-
-SetCharsPerMinute sets CharsPerMinute field to given value.
-
-
 ### GetTurns
 
 `func (o *WhatsappMeta) GetTurns() int32`
@@ -358,6 +339,46 @@ and a boolean to check if the value has been set.
 `func (o *WhatsappMeta) SetConversationsSelected(v int32)`
 
 SetConversationsSelected sets ConversationsSelected field to given value.
+
+
+### GetVoiceNote
+
+`func (o *WhatsappMeta) GetVoiceNote() bool`
+
+GetVoiceNote returns the VoiceNote field if non-nil, zero value otherwise.
+
+### GetVoiceNoteOk
+
+`func (o *WhatsappMeta) GetVoiceNoteOk() (*bool, bool)`
+
+GetVoiceNoteOk returns a tuple with the VoiceNote field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetVoiceNote
+
+`func (o *WhatsappMeta) SetVoiceNote(v bool)`
+
+SetVoiceNote sets VoiceNote field to given value.
+
+
+### GetExpression
+
+`func (o *WhatsappMeta) GetExpression() bool`
+
+GetExpression returns the Expression field if non-nil, zero value otherwise.
+
+### GetExpressionOk
+
+`func (o *WhatsappMeta) GetExpressionOk() (*bool, bool)`
+
+GetExpressionOk returns a tuple with the Expression field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetExpression
+
+`func (o *WhatsappMeta) SetExpression(v bool)`
+
+SetExpression sets Expression field to given value.
 
 
 

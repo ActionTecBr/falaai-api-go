@@ -28,7 +28,7 @@ import (
 )
 
 func main() {
-	diagnosticRequest := *openapiclient.NewDiagnosticRequest("Language_example", float32(123)) // DiagnosticRequest | 
+	diagnosticRequest := *openapiclient.NewDiagnosticRequest("Language_example") // DiagnosticRequest | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -92,7 +92,7 @@ import (
 )
 
 func main() {
-	riskAuditRequest := *openapiclient.NewRiskAuditRequest(float32(123), "Language_example", "ResponseLanguage_example") // RiskAuditRequest | 
+	riskAuditRequest := *openapiclient.NewRiskAuditRequest("Dialog_example", float32(123), "Language_example", "ResponseLanguage_example") // RiskAuditRequest | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

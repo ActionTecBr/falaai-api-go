@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **Analysis** | [**DiagnosticAnalysisMap**](DiagnosticAnalysisMap.md) | The 6 conversation analyses (5 + participants) | 
 **Usage** | [**DiagnosticUsage**](DiagnosticUsage.md) | Usage and processing information | 
 **ClientReferenceId** | Pointer to **string** | Client-supplied ID echoed verbatim (if provided in request) | [optional] 
+**HtmlReport** | Pointer to **string** | Visual HTML report of the diagnosis (base64 gzip). Only present when &#39;dialog&#39; is provided; null for text-only requests. | [optional] 
 
 ## Methods
 
@@ -154,6 +155,31 @@ SetClientReferenceId sets ClientReferenceId field to given value.
 `func (o *DiagnosticResponse) HasClientReferenceId() bool`
 
 HasClientReferenceId returns a boolean if a field has been set.
+
+### GetHtmlReport
+
+`func (o *DiagnosticResponse) GetHtmlReport() string`
+
+GetHtmlReport returns the HtmlReport field if non-nil, zero value otherwise.
+
+### GetHtmlReportOk
+
+`func (o *DiagnosticResponse) GetHtmlReportOk() (*string, bool)`
+
+GetHtmlReportOk returns a tuple with the HtmlReport field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetHtmlReport
+
+`func (o *DiagnosticResponse) SetHtmlReport(v string)`
+
+SetHtmlReport sets HtmlReport field to given value.
+
+### HasHtmlReport
+
+`func (o *DiagnosticResponse) HasHtmlReport() bool`
+
+HasHtmlReport returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

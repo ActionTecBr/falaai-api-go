@@ -6,13 +6,13 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Interlocutor** | **string** | Exact speaker label from the dialog (e.g. &#39;Speaker 1&#39;) | 
 **Name** | Pointer to **string** | Participant name (optional) | [optional] 
-**Role** | **string** | agent | client | bot | 
+**Role** | Pointer to **string** | agent | client | bot (optional — omit/empty when unknown) | [optional] 
 
 ## Methods
 
 ### NewDiagnosticParticipant
 
-`func NewDiagnosticParticipant(interlocutor string, role string, ) *DiagnosticParticipant`
+`func NewDiagnosticParticipant(interlocutor string, ) *DiagnosticParticipant`
 
 NewDiagnosticParticipant instantiates a new DiagnosticParticipant object
 This constructor will assign default values to properties that have it defined,
@@ -91,6 +91,11 @@ and a boolean to check if the value has been set.
 
 SetRole sets Role field to given value.
 
+### HasRole
+
+`func (o *DiagnosticParticipant) HasRole() bool`
+
+HasRole returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

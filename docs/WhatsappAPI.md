@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 ## ExtractConversationsV1WhatsappExtractConversationsPost
 
-> WhatsappConversationsResponse ExtractConversationsV1WhatsappExtractConversationsPost(ctx).File(file).Start(start).End(end).Timezone(timezone).DateFormat(dateFormat).GapMinutes(gapMinutes).MinMessages(minMessages).CharsPerMinute(charsPerMinute).ClientReferenceId(clientReferenceId).Execute()
+> WhatsappConversationsResponse ExtractConversationsV1WhatsappExtractConversationsPost(ctx).File(file).Start(start).End(end).Timezone(timezone).DateFormat(dateFormat).GapMinutes(gapMinutes).MinMessages(minMessages).VoiceNote(voiceNote).Expression(expression).ClientReferenceId(clientReferenceId).Execute()
 
 Extract and segment WhatsApp conversations from an export
 
@@ -34,12 +34,13 @@ func main() {
 	dateFormat := "dateFormat_example" // string | 
 	gapMinutes := float32(8.14) // float32 |  (optional) (default to 720)
 	minMessages := int32(56) // int32 |  (optional) (default to 2)
-	charsPerMinute := float32(8.14) // float32 |  (optional) (default to 800)
+	voiceNote := true // bool | Transcrever mensagens de voz/video gravadas na hora? (optional) (default to true)
+	expression := true // bool | Descrever expressoes visuais (figurinha/GIF/imagem)? (optional) (default to true)
 	clientReferenceId := "clientReferenceId_example" // string |  (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.WhatsappAPI.ExtractConversationsV1WhatsappExtractConversationsPost(context.Background()).File(file).Start(start).End(end).Timezone(timezone).DateFormat(dateFormat).GapMinutes(gapMinutes).MinMessages(minMessages).CharsPerMinute(charsPerMinute).ClientReferenceId(clientReferenceId).Execute()
+	resp, r, err := apiClient.WhatsappAPI.ExtractConversationsV1WhatsappExtractConversationsPost(context.Background()).File(file).Start(start).End(end).Timezone(timezone).DateFormat(dateFormat).GapMinutes(gapMinutes).MinMessages(minMessages).VoiceNote(voiceNote).Expression(expression).ClientReferenceId(clientReferenceId).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `WhatsappAPI.ExtractConversationsV1WhatsappExtractConversationsPost``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -67,7 +68,8 @@ Name | Type | Description  | Notes
  **dateFormat** | **string** |  | 
  **gapMinutes** | **float32** |  | [default to 720]
  **minMessages** | **int32** |  | [default to 2]
- **charsPerMinute** | **float32** |  | [default to 800]
+ **voiceNote** | **bool** | Transcrever mensagens de voz/video gravadas na hora? | [default to true]
+ **expression** | **bool** | Descrever expressoes visuais (figurinha/GIF/imagem)? | [default to true]
  **clientReferenceId** | **string** |  | 
 
 ### Return type

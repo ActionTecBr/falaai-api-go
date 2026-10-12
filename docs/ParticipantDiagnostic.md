@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Interlocutor** | **string** | Exact speaker label from the dialog (e.g. &#39;Speaker 1&#39;) | 
-**Role** | **string** | Role: agent | client | bot | agent_requester | agent_custodian | 
+**Role** | Pointer to **string** | Role: agent | client | bot | agent_requester | agent_custodian (null when not informed/inferred) | [optional] 
 **Name** | Pointer to **string** | Participant name if mentioned in the dialogue | [optional] 
 **Confidence** | Pointer to **string** | high | medium | low | [optional] 
 **Evidence** | Pointer to **string** | Exact verbatim quote supporting the role (no timestamps) | [optional] 
@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 
 ### NewParticipantDiagnostic
 
-`func NewParticipantDiagnostic(interlocutor string, role string, ) *ParticipantDiagnostic`
+`func NewParticipantDiagnostic(interlocutor string, ) *ParticipantDiagnostic`
 
 NewParticipantDiagnostic instantiates a new ParticipantDiagnostic object
 This constructor will assign default values to properties that have it defined,
@@ -68,6 +68,11 @@ and a boolean to check if the value has been set.
 
 SetRole sets Role field to given value.
 
+### HasRole
+
+`func (o *ParticipantDiagnostic) HasRole() bool`
+
+HasRole returns a boolean if a field has been set.
 
 ### GetName
 

@@ -5,22 +5,21 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Model** | Pointer to **string** | Analysis model. Always &#39;falaai-risk-audit-1&#39; | [optional] [default to "falaai-risk-audit-1"]
-**Text** | Pointer to **string** | Plain transcript (fallback if dialog is empty). At least one of &#39;dialog&#39; or &#39;text&#39; required. Max 300,000 characters | [optional] [default to ""]
-**Dialog** | Pointer to **string** | Diarized transcript with speaker turns. PRIMARY source. Speaker labels accepted (any case): &#39;Speaker N&#39;, &#39;Interlocutor N&#39;, &#39;Hablante N&#39;, &#39;Locutor N&#39;, &#39;Orador N&#39; (space or underscore). Normalized internally to &#39;Speaker N&#39; in the response. Max 300,000 characters | [optional] [default to ""]
+**Dialog** | **string** | Diarized transcript with speaker turns. REQUIRED — risk audit only accepts diarized conversations; plain &#39;text&#39; is not accepted. Speaker labels accepted (any case): &#39;Speaker N&#39;, &#39;Interlocutor N&#39;, &#39;Hablante N&#39;, &#39;Locutor N&#39;, &#39;Orador N&#39; (space or underscore). Normalized internally to &#39;Speaker N&#39; in the response. Max 300,000 characters | 
 **AudioEvents** | Pointer to [**[]DiagnosticAudioEvent**](DiagnosticAudioEvent.md) | Audio events with timestamps (correlated with turns when diarization is present) | [optional] [default to {}]
-**DurationSeconds** | **float32** | Total audio duration in seconds. Required. Max 3h (10800s). | 
+**DurationSeconds** | **float32** | Total audio duration in seconds. Required. Must be &gt;&#x3D; last turn end. Max 3h (10800s). | 
 **Language** | **string** | Language of the transcript being analyzed. Must match the dialog/text language. Accepted: pt-BR, en-US, es-ES. | 
 **ResponseLanguage** | **string** | Language for analysis results (labels, categories, levels, actions, HTML report). Can differ from &#39;language&#39;. Accepted: pt-BR, en-US, es-ES. | 
 **CallDirection** | Pointer to **string** | Who originated the call. inbound&#x3D;client called, outbound&#x3D;company called. If omitted, LLM infers from context. | [optional] 
 **Participants** | Pointer to [**[]Participant**](Participant.md) | Explicit participant roles. If omitted, LLM infers from dialog (Lei 17). When provided, used as ground truth — no inference. | [optional] 
 **ResponseFormat** | Pointer to **string** | Response format version. Only &#39;v2&#39; (structured EN-US blocks) is available today. | [optional] [default to "v2"]
-**ClientReferenceId** | Pointer to **string** | Optional client-supplied ID echoed verbatim in the response. Use to correlate/sync with your system. Accepted charset: [A-Za-z0-9._:-], max 128 chars. Not idempotency. | [optional] 
+**ClientReferenceId** | Pointer to **string** | Optional client-supplied ID echoed verbatim in the response. Use to correlate/sync with your system. Accepted charset: [A-Za-z0-9 _/:.-], max 60 chars. Not idempotency. | [optional] 
 
 ## Methods
 
 ### NewRiskAuditRequest
 
-`func NewRiskAuditRequest(durationSeconds float32, language string, responseLanguage string, ) *RiskAuditRequest`
+`func NewRiskAuditRequest(dialog string, durationSeconds float32, language string, responseLanguage string, ) *RiskAuditRequest`
 
 NewRiskAuditRequest instantiates a new RiskAuditRequest object
 This constructor will assign default values to properties that have it defined,
@@ -60,31 +59,6 @@ SetModel sets Model field to given value.
 
 HasModel returns a boolean if a field has been set.
 
-### GetText
-
-`func (o *RiskAuditRequest) GetText() string`
-
-GetText returns the Text field if non-nil, zero value otherwise.
-
-### GetTextOk
-
-`func (o *RiskAuditRequest) GetTextOk() (*string, bool)`
-
-GetTextOk returns a tuple with the Text field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetText
-
-`func (o *RiskAuditRequest) SetText(v string)`
-
-SetText sets Text field to given value.
-
-### HasText
-
-`func (o *RiskAuditRequest) HasText() bool`
-
-HasText returns a boolean if a field has been set.
-
 ### GetDialog
 
 `func (o *RiskAuditRequest) GetDialog() string`
@@ -104,11 +78,6 @@ and a boolean to check if the value has been set.
 
 SetDialog sets Dialog field to given value.
 
-### HasDialog
-
-`func (o *RiskAuditRequest) HasDialog() bool`
-
-HasDialog returns a boolean if a field has been set.
 
 ### GetAudioEvents
 

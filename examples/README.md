@@ -1,6 +1,6 @@
 # sdks/go/examples - exemplos go (canonicos)
 
-@version 1.4.0 | criado: 28/09/2026 17:22 | atualizado: 04/10/2026 02:35
+@version 1.4.0 | criado: 28/09/2026 17:22 | atualizado: 12/10/2026 17:00
 
 ## O que e
 Os 4 exemplos go (go) dos endpoints da API, EXPORTADOS DA LANDING PAGE (fonte unica
@@ -31,18 +31,18 @@ _generate_go_examples.mjs (prefixo _ = ferramenta, nao exemplo)
 ## Relatorio da ultima execucao
 | Data | Modo | Resultado |
 |------|------|-----------|
-| 04/10/2026 02:35 | verificacao (--check) | OK - 5 exemplos go 100% conforme a landing. |
+| 12/10/2026 17:00 | verificacao (--check) | OK - 5 exemplos go 100% conforme a landing. |
 
 | Arquivo | Endpoint | Status | Gerado em |
 |---------|----------|--------|-----------|
-| health.go | GET  /v1/health | ok | 04/10/2026 02:16 |
-| transcribe.go | POST /v1/audio/transcriptions | ok | 04/10/2026 02:16 |
-| diagnose.go | POST /v1/analyze/diagnostic | ok | 04/10/2026 02:16 |
-| audit.go | POST /v1/analyze/riskAudit | ok | 04/10/2026 02:16 |
-| whatsapp.go | whatsapp.go | ok | 04/10/2026 02:16 |
+| health.go | GET  /v1/health | ok | 12/10/2026 15:06 |
+| transcribe.go | POST /v1/audio/transcriptions | ok | 12/10/2026 15:06 |
+| diagnose.go | POST /v1/analyze/diagnostic | ok | 12/10/2026 15:06 |
+| audit.go | POST /v1/analyze/riskAudit | ok | 12/10/2026 15:06 |
+| whatsapp.go | whatsapp.go | ok | 12/10/2026 15:06 |
 
 ## Datas
 - Criacao:     28/09/2026 17:22
-- Atualizacao: 04/10/2026 02:35
+- Atualizacao: 12/10/2026 17:00
 
 Gerado automaticamente por _generate_go_examples.mjs - NAO edite a mao.

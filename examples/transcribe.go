@@ -25,7 +25,7 @@ func main() {
 
 	model := "falaai-transcribe-1"
 	language := "pt"
-	clientReferenceId := "call_202609271408"
+	clientReferenceId := "20260927140800000-aud"
 
 // REQUIRED: file (audio) + Authorization (fai_ key)
 // OPTIONAL (server defaults): model -> falaai-transcribe-1 | language -> pt | client_reference_id -> (empty)

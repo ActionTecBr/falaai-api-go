@@ -29,8 +29,8 @@ import (
 func main() {
 	file := os.NewFile(1234, "some_file") // *os.File | 
 	model := "model_example" // string |  (optional) (default to "falaai-transcribe-1")
-	language := "language_example" // string |  (optional) (default to "pt")
-	clientReferenceId := "clientReferenceId_example" // string | Optional client-supplied ID echoed verbatim in the response. Use to correlate/sync with your system. Accepted charset: [A-Za-z0-9._:-]. Not idempotency. (optional)
+	language := "language_example" // string |  (optional)
+	clientReferenceId := "clientReferenceId_example" // string | Optional client-supplied ID echoed verbatim in the response. Use to correlate/sync with your system. Accepted charset: [A-Za-z0-9 _/:.-], max 60 chars. Not idempotency. (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -57,8 +57,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **file** | ***os.File** |  | 
  **model** | **string** |  | [default to &quot;falaai-transcribe-1&quot;]
- **language** | **string** |  | [default to &quot;pt&quot;]
- **clientReferenceId** | **string** | Optional client-supplied ID echoed verbatim in the response. Use to correlate/sync with your system. Accepted charset: [A-Za-z0-9._:-]. Not idempotency. | 
+ **language** | **string** |  | 
+ **clientReferenceId** | **string** | Optional client-supplied ID echoed verbatim in the response. Use to correlate/sync with your system. Accepted charset: [A-Za-z0-9 _/:.-], max 60 chars. Not idempotency. | 
 
 ### Return type
 
